@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Non-Response-Follow-Up: Census Taker Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 800px;
+            margin: 20px auto;
+            background-color: #111;
+            padding: 20px;
+            border: 1px solid #39ff14;
+            position: relative;
+            overflow: hidden;
+        }
+        h1 {
+            color: #39ff14;
+            text-align: center;
+            text-shadow: 0 0 5px #39ff14;
+        }
+        .screen {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #39ff14;
+            min-height: 400px;
+            position: relative;
+            display: none;
+        }
+        #start-screen {
+            display: block;
+        }
+        .house {
+            margin: 20px;
+            padding: 20px;
+            background-color: #222;
+            border: 1px solid #39ff14;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .house:hover {
+            background-color: #333;
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #222;
+            color: #39ff14;
+            border: 1px solid #39ff14;
+            cursor: pointer;
+            text-align: center;
+            margin: 10px;
+            transition: all 0.2s ease;
+        }
+        .button:hover {
+            background-color: #39ff14;
+            color: #000;
+        }
+        .conversation {
+            margin-top: 20px;
+            border: 1px solid #666;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            background-color: #0a0a0a;
+        }
+        .npc-message {
+            color: #ffcc00;
+            margin-bottom: 10px;
+        }
+        .player-message {
+            color: #39ff14;
+            margin-bottom: 10px;
+        }
+        .system-message {
+            color: #aaaaaa;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .input-area {
+            margin-top: 10px;
+            display: flex;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 5px;
+            background-color: #000;
+            color: #fff;
+            border: 1px solid #39ff14;
+        }
+        .form {
+            margin-top: 20px;
+            background-color: #332200;
+            padding: 10px;
+            border: 1px solid #ffcc00;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .form-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .label {
+            display: inline-block;
+            width: 150px;
+            color: #ffcc00;
+        }
+        .value {
+            display: inline-block;
+            width: 400px;
+            background-color: rgba(255,255,255,0.1);
+            padding: 3px;
+            min-height: 16px;
+        }
+        .checkbox {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: transparent;
+            border: 1px solid #ffcc00;
+            text-align: center;
+            color: #ffcc00;
+            margin-left: 10px;
+        }
+        
+        /* Pixel Art Character Styles */
+        .character-container {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            position: relative;
+            overflow: visible;
+        }
+        
+        /* Johnson - Grumpy Old Man */
+        .johnson-character {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+        }
+        .johnson-head {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: #ddccaa;
+            border-radius: 30px;
+            top: 20px;
+            left: 70px;
+        }
+        .johnson-body {
+            position: absolute;
+            width: 80px;
+            height: 100px;
+            background-color: #553333;
+            top: 80px;
+            left: 60px;
+            border-radius: 10px 10px 0 0;
+        }
+        .johnson-arm {
+            position: absolute;
+            width: 15px;
+            height: 70px;
+            background-color: #553333;
+        }
+        .johnson-arm-left {
+            transform: rotate(15deg);
+            top: 90px;
+            left: 50px;
+        }
+        .johnson-arm-right {
+            transform: rotate(-15deg);
+            top: 90px;
+            left: 135px;
+        }
+        .johnson-leg {
+            position: absolute;
+            width: 20px;
+            height: 60px;
+            background-color: #332222;
+            top: 180px;
+        }
+        .johnson-leg-left {
+            left: 70px;
+        }
+        .johnson-leg-right {
+            left: 110px;
+        }
+        .johnson-eye {
+            position: absolute;
+            width: 12px;
+            height: 10px;
+            background-color: #000;
+            top: 35px;
+            border-radius: 50%;
+        }
+        .johnson-eye-left {
+            left: 82px;
+        }
+        .johnson-eye-right {
+            left: 106px;
+        }
+        .johnson-mouth {
+            position: absolute;
+            width: 30px;
+            height: 10px;
+            background-color: #000;
+            top: 55px;
+            left: 85px;
+            border-radius: 0 0 10px 10px;
+            transform: rotate(180deg);
+        }
+        .johnson-hair {
+            position: absolute;
+            width: 70px;
+            height: 20px;
+            top: 15px;
+            left: 65px;
+            background-color: #998866;
+            border-radius: 35px 35px 0 0;
+        }
+        .johnson-cane {
+            position: absolute;
+            width: 8px;
+            height: 120px;
+            background-color: #995533;
+            top: 100px;
+            left: 160px;
+            transform: rotate(-10deg);
+        }
+        .johnson-cane-handle {
+            position: absolute;
+            width: 20px;
+            height: 8px;
+            background-color: #995533;
+            top: 100px;
+            left: 155px;
+            border-radius: 5px;
+        }
+        
+        /* Garcia - Busy Mom */
+        .garcia-character {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+        }
+        .garcia-head {
+            position: absolute;
+            width: 50px;
+            height: 60px;
+            background-color: #ffcc99;
+            border-radius: 25px;
+            top: 20px;
+            left: 75px;
+        }
+        .garcia-body {
+            position: absolute;
+            width: 70px;
+            height: 80px;
+            background-color: #44aa44;
+            top: 80px;
+            left: 65px;
+            border-radius: 20px 20px 0 0;
+        }
+        .garcia-skirt {
+            position: absolute;
+            width: 90px;
+            height: 40px;
+            background-color: #55cc55;
+            top: 160px;
+            left: 55px;
+            border-radius: 0 0 45px 45px;
+        }
+        .garcia-arm {
+            position: absolute;
+            width: 15px;
+            height: 60px;
+            background-color: #44aa44;
+        }
+        .garcia-arm-left {
+            transform: rotate(25deg);
+            top: 90px;
+            left: 55px;
+        }
+        .garcia-arm-right {
+            transform: rotate(-25deg);
+            top: 90px;
+            left: 130px;
+        }
+        .garcia-leg {
+            position: absolute;
+            width: 15px;
+            height: 30px;
+            background-color: #ffcc99;
+            top: 200px;
+        }
+        .garcia-leg-left {
+            left: 75px;
+        }
+        .garcia-leg-right {
+            left: 110px;
+        }
+        .garcia-eye {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #000;
+            top: 35px;
+            border-radius: 50%;
+        }
+        .garcia-eye-left {
+            left: 85px;
+        }
+        .garcia-eye-right {
+            left: 105px;
+        }
+        .garcia-mouth {
+            position: absolute;
+            width: 20px;
+            height: 8px;
+            background-color: #000;
+            top: 55px;
+            left: 90px;
+            border-radius: 0 0 10px 10px;
+        }
+        .garcia-hair {
+            position: absolute;
+            width: 60px;
+            height: 40px;
+            background-color: #663300;
+            border-radius: 30px 30px 0 0;
+            top: 5px;
+            left: 70px;
+        }
+        .garcia-hair-bun {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-color: #663300;
+            border-radius: 50%;
+            top: 15px;
+            left: 55px;
+        }
+        .garcia-cookie {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #aa7744;
+            border-radius: 50%;
+            top: 100px;
+            left: 150px;
+        }
+        .cookie-chip1 {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: #553311;
+            border-radius: 50%;
+            top: 105px;
+            left: 155px;
+        }
+        .cookie-chip2 {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: #553311;
+            border-radius: 50%;
+            top: 110px;
+            left: 160px;
+        }
+        
+        /* Williams - Professor */
+        .williams-character {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+        }
+        .williams-head {
+            position: absolute;
+            width: 55px;
+            height: 65px;
+            background-color: #dddddd;
+            border-radius: 28px;
+            top: 20px;
+            left: 73px;
+        }
+        .williams-body {
+            position: absolute;
+            width: 80px;
+            height: 110px;
+            background-color: #333366;
+            top: 85px;
+            left: 60px;
+        }
+        .williams-arm {
+            position: absolute;
+            width: 15px;
+            height: 70px;
+            background-color: #333366;
+        }
+        .williams-arm-left {
+            transform: rotate(15deg);
+            top: 100px;
+            left: 50px;
+        }
+        .williams-arm-right {
+            transform: rotate(-15deg);
+            top: 100px;
+            left: 135px;
+        }
+        .williams-leg {
+            position: absolute;
+            width: 20px;
+            height: 50px;
+            background-color: #111122;
+            top: 195px;
+        }
+        .williams-leg-left {
+            left: 70px;
+        }
+        .williams-leg-right {
+            left: 110px;
+        }
+        .williams-eye {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #000;
+            top: 40px;
+            border-radius: 50%;
+        }
+        .williams-eye-left {
+            left: 85px;
+        }
+        .williams-eye-right {
+            left: 108px;
+        }
+        .williams-mouth {
+            position: absolute;
+            width: 20px;
+            height: 2px;
+            background-color: #000;
+            top: 60px;
+            left: 90px;
+        }
+        .williams-glasses {
+            position: absolute;
+            width: 50px;
+            height: 15px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            top: 38px;
+            left: 75px;
+            background-color: transparent;
+        }
+        .williams-glasses:before {
+            content: "";
+            position: absolute;
+            width: 10px;
+            height: 2px;
+            background-color: #000;
+            top: 6px;
+            left: -10px;
+        }
+        .williams-book {
+            position: absolute;
+            width: 35px;
+            height: 45px;
+            background-color: #3366aa;
+            top: 120px;
+            left: 140px;
+            transform: rotate(-10deg);
+        }
+        .williams-book-pages {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            background-color: #ffffff;
+            top: 122px;
+            left: 142px;
+            transform: rotate(-10deg);
+        }
+        .williams-book-line {
+            position: absolute;
+            width: 20px;
+            height: 1px;
+            background-color: #000;
+            transform: rotate(-10deg);
+        }
+        .williams-book-line1 {
+            top: 130px;
+            left: 147px;
+        }
+        .williams-book-line2 {
+            top: 135px;
+            left: 146px;
+        }
+        .williams-book-line3 {
+            top: 140px;
+            left: 145px;
+        }
+        .williams-tie {
+            position: absolute;
+            width: 15px;
+            height: 40px;
+            background-color: #aa3333;
+            top: 95px;
+            left: 92px;
+            clip-path: polygon(50% 0%, 100% 0%, 50% 100%, 0% 0%);
+        }
+        
+        /* House Icons in Map */
+        .house-icon {
+            width: 100px;
+            height: 80px;
+            margin: 0 auto 10px auto;
+            position: relative;
+        }
+        .house-base {
+            width: 100px;
+            height: 60px;
+            background-color: #aa7744;
+            position: absolute;
+            bottom: 0;
+        }
+        .house-roof {
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 30px solid #884422;
+            position: absolute;
+            top: -30px;
+        }
+        .house-door {
+            width: 20px;
+            height: 30px;
+            background-color: #553311;
+            position: absolute;
+            bottom: 0;
+            left: 40px;
+        }
+        .house-window {
+            width: 15px;
+            height: 15px;
+            background-color: #aaddff;
+            border: 2px solid #553311;
+            position: absolute;
+        }
+        .house-window-1 {
+            top: 15px;
+            left: 15px;
+        }
+        .house-window-2 {
+            top: 15px;
+            right: 15px;
+        }
+        
+        /* General game styles */
+        .progress-bar-container {
+            width: 100%;
+            height: 20px;
+            background-color: #222;
+            margin-top: 10px;
+            border: 1px solid #39ff14;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #39ff14;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .game-title {
+            animation: glitch 2s infinite;
+        }
+        @keyframes glitch {
+            0% {
+                text-shadow: 2px 2px 0px #ff00ff, -2px -2px 0px #00ffff;
+            }
+            25% {
+                text-shadow: -2px 2px 0px #ff00ff, 2px -2px 0px #00ffff;
+            }
+            50% {
+                text-shadow: 2px -2px 0px #ff00ff, -2px 2px 0px #00ffff;
+            }
+            75% {
+                text-shadow: -2px -2px 0px #ff00ff, 2px 2px 0px #00ffff;
+            }
+            100% {
+                text-shadow: 2px 2px 0px #ff00ff, -2px -2px 0px #00ffff;
+            }
+        }
+        #completion-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #222;
+            border: 1px solid #39ff14;
+            padding: 5px 10px;
+            color: #39ff14;
+        }
+        #day-counter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #222;
+            border: 1px solid #39ff14;
+            padding: 5px 10px;
+            color: #39ff14;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="main-container">
+        <h1 class="game-title">NON-RESPONSE-FOLLOW-UP</h1>
+        <h2 style="text-align: center; color: #cccccc;">A Census Taker Adventure</h2>
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h2 style="text-align: center; color: #39ff14;">Welcome, Census Taker!</h2>
+            <p>Your mission is to collect census information from three non-responding households. You need to gather:</p>
+            <ul>
+                <li>Household Size</li>
+                <li>Housing Status (own/rent)</li>
+                <li>Ages</li>
+                <li>Occupation</li>
+                <li>Years at Address</li>
+            </ul>
+            <p>Click the button below to start your assignment.</p>
+            <div class="button" onclick="startGame()">START ASSIGNMENT</div>
+        </div>
+        
+        <!-- Map Screen -->
+        <div id="map-screen" class="screen">
+            <div id="day-counter">CENSUS DAY: 42</div>
+            <div id="completion-counter">COMPLETION: 0%</div>
+            
+            <h2 style="text-align: center; color: #39ff14;">Census Area Map</h2>
+            <p>Select a household to visit:</p>
+            
+            <div class="house" onclick="visitHouse(1)">
+                <div class="house-icon">
+                    <div class="house-roof"></div>
+                    <div class="house-base" style="background-color: #aa6644;"></div>
+                    <div class="house-door"></div>
+                    <div class="house-window house-window-1"></div>
+                    <div class="house-window house-window-2"></div>
+                </div>
+                <h3>House #1: Mr. Johnson</h3>
+                <p>Status: <span id="house1-status">Not Visited</span></p>
+            </div>
+            
+            <div class="house" onclick="visitHouse(2)">
+                <div class="house-icon">
+                    <div class="house-roof" style="border-bottom-color: #884466;"></div>
+                    <div class="house-base" style="background-color: #aa8866;"></div>
+                    <div class="house-door"></div>
+                    <div class="house-window house-window-1"></div>
+                    <div class="house-window house-window-2"></div>
+                </div>
+                <h3>House #2: Mrs. Garcia</h3>
+                <p>Status: <span id="house2-status">Not Visited</span></p>
+            </div>
+            
+            <div class="house" onclick="visitHouse(3)">
+                <div class="house-icon">
+                    <div class="house-roof" style="border-bottom-color: #446688;"></div>
+                    <div class="house-base" style="background-color: #ccaa88;"></div>
+                    <div class="house-door"></div>
+                    <div class="house-window house-window-1"></div>
+                    <div class="house-window house-window-2"></div>
+                </div>
+                <h3>House #3: Dr. Williams</h3>
+                <p>Status: <span id="house3-status">Not Visited</span></p>
+            </div>
+        </div>
+        
+        <!-- House 1 Screen -->
+        <div id="house1-screen" class="screen">
+            <h2 style="text-align: center; color: #39ff14;">Mr. Johnson's House</h2>
+            
+            <div class="character-container">
+                <div class="johnson-character">
+                    <div class="johnson-hair"></div>
+                    <div class="johnson-head"></div>
+                    <div class="johnson-eye johnson-eye-left"></div>
+                    <div class="johnson-eye johnson-eye-right"></div>
+                    <div class="johnson-mouth"></div>
+                    <div class="johnson-body"></div>
+                    <div class="johnson-arm johnson-arm-left"></div>
+                    <div class="johnson-arm johnson-arm-right"></div>
+                    <div class="johnson-leg johnson-leg-left"></div>
+                    <div class="johnson-leg johnson-leg-right"></div>
+                    <div class="johnson-cane"></div>
+                    <div class="johnson-cane-handle"></div>
+                </div>
+            </div>
+            
+            <div class="conversation" id="house1-conversation">
+                <div class="npc-message"><strong>Mr. Johnson:</strong> Who are you and what do you want? I don't open my door to strangers.</div>
+                <div class="system-message">Try asking about household size, housing status, age, occupation, or years at this address.</div>
+            </div>
+            
+            <div class="input-area">
+                <!-- FIXED: Changed to house1-input and askQuestion(1) -->
+                <input type="text" id="house1-input" placeholder="Type your question...">
+                <div class="button" onclick="askQuestion(1)">Ask</div>
+            </div>
+            
+            <div class="form">
+                <h3 style="margin-top: 0; color: #ffcc00;">CENSUS FORM</h3>
+                
+                <div class="form-item">
+                    <span class="label">Household Size:</span>
+                    <span class="value" id="house1-size"></span>
+                    <span class="checkbox" id="house1-size-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Housing Status:</span>
+                    <span class="value" id="house1-status-value"></span>
+                    <span class="checkbox" id="house1-status-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Ages:</span>
+                    <span class="value" id="house1-ages"></span>
+                    <span class="checkbox" id="house1-ages-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Occupation:</span>
+                    <span class="value" id="house1-occupation"></span>
+                    <span class="checkbox" id="house1-occupation-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Years at Address:</span>
+                    <span class="value" id="house1-years"></span>
+                    <span class="checkbox" id="house1-years-check"></span>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="house1-progress"></div>
+                </div>
+            </div>
+            
+            <div class="button" onclick="returnToMap(1)">End Census & Return to Map</div>
+        </div>
+        
+        <!-- House 2 Screen -->
+        <div id="house2-screen" class="screen">
+            <h2 style="text-align: center; color: #39ff14;">Mrs. Garcia's House</h2>
+            
+            <div class="character-container">
+                <div class="garcia-character">
+                    <div class="garcia-hair"></div>
+                    <div class="garcia-hair-bun"></div>
+                    <div class="garcia-head"></div>
+                    <div class="garcia-eye garcia-eye-left"></div>
+                    <div class="garcia-eye garcia-eye-right"></div>
+                    <div class="garcia-mouth"></div>
+                    <div class="garcia-body"></div>
+                    <div class="garcia-skirt"></div>
+                    <div class="garcia-arm garcia-arm-left"></div>
+                    <div class="garcia-arm garcia-arm-right"></div>
+                    <div class="garcia-leg garcia-leg-left"></div>
+                    <div class="garcia-leg garcia-leg-right"></div>
+                    <div class="garcia-cookie"></div>
+                    <div class="cookie-chip1"></div>
+                    <div class="cookie-chip2"></div>
+                </div>
+            </div>
+            
+            <div class="conversation" id="house2-conversation">
+                <div class="npc-message"><strong>Mrs. Garcia:</strong> Hello there! Oh, I'm in the middle of baking cookies for the neighborhood potluck!</div>
+                <div class="system-message">Try asking about household size, housing status, age, occupation, or years at this address.</div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="house2-input" placeholder="Type your question...">
+                <div class="button" onclick="askQuestion(2)">Ask</div>
+            </div>
+            
+            <div class="form">
+                <h3 style="margin-top: 0; color: #ffcc00;">CENSUS FORM</h3>
+                
+                <div class="form-item">
+                    <span class="label">Household Size:</span>
+                    <span class="value" id="house2-size"></span>
+                    <span class="checkbox" id="house2-size-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Housing Status:</span>
+                    <span class="value" id="house2-status-value"></span>
+                    <span class="checkbox" id="house2-status-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Ages:</span>
+                    <span class="value" id="house2-ages"></span>
+                    <span class="checkbox" id="house2-ages-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Occupation:</span>
+                    <span class="value" id="house2-occupation"></span>
+                    <span class="checkbox" id="house2-occupation-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Years at Address:</span>
+                    <span class="value" id="house2-years"></span>
+                    <span class="checkbox" id="house2-years-check"></span>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="house2-progress"></div>
+                </div>
+            </div>
+            
+            <div class="button" onclick="returnToMap(2)">End Census & Return to Map</div>
+        </div>
+        
+        <!-- House 3 Screen -->
+        <div id="house3-screen" class="screen">
+            <h2 style="text-align: center; color: #39ff14;">Dr. Williams' House</h2>
+            
+            <div class="character-container">
+                <div class="williams-character">
+                    <div class="williams-head"></div>
+                    <div class="williams-eye williams-eye-left"></div>
+                    <div class="williams-eye williams-eye-right"></div>
+                    <div class="williams-mouth"></div>
+                    <div class="williams-glasses"></div>
+                    <div class="williams-body"></div>
+                    <div class="williams-tie"></div>
+                    <div class="williams-arm williams-arm-left"></div>
+                    <div class="williams-arm williams-arm-right"></div>
+                    <div class="williams-leg williams-leg-left"></div>
+                    <div class="williams-leg williams-leg-right"></div>
+                    <div class="williams-book"></div>
+                    <div class="williams-book-pages"></div>
+                    <div class="williams-book-line williams-book-line1"></div>
+                    <div class="williams-book-line williams-book-line2"></div>
+                    <div class="williams-book-line williams-book-line3"></div>
+                </div>
+            </div>
+            
+            <div class="conversation" id="house3-conversation">
+                <div class="npc-message"><strong>Dr. Williams:</strong> Yes? Can I help you? I'm in the middle of grading papers.</div>
+                <div class="system-message">Try asking about household size, housing status, age, occupation, or years at this address.</div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="house3-input" placeholder="Type your question...">
+                <div class="button" onclick="askQuestion(3)">Ask</div>
+            </div>
+            
+            <div class="form">
+                <h3 style="margin-top: 0; color: #ffcc00;">CENSUS FORM</h3>
+                
+                <div class="form-item">
+                    <span class="label">Household Size:</span>
+                    <span class="value" id="house3-size"></span>
+                    <span class="checkbox" id="house3-size-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Housing Status:</span>
+                    <span class="value" id="house3-status-value"></span>
+                    <span class="checkbox" id="house3-status-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Ages:</span>
+                    <span class="value" id="house3-ages"></span>
+                    <span class="checkbox" id="house3-ages-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Occupation:</span>
+                    <span class="value" id="house3-occupation"></span>
+                    <span class="checkbox" id="house3-occupation-check"></span>
+                </div>
+                
+                <div class="form-item">
+                    <span class="label">Years at Address:</span>
+                    <span class="value" id="house3-years"></span>
+                    <span class="checkbox" id="house3-years-check"></span>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="house3-progress"></div>
+                </div>
+            </div>
+            
+            <div class="button" onclick="returnToMap(3)">End Census & Return to Map</div>
+        </div>
+        
+        <!-- Game Complete Screen -->
+        <div id="complete-screen" class="screen">
+            <h2 style="text-align: center; color: #39ff14;">Census Assignment Complete!</h2>
+            <p>Congratulations! You have successfully collected census data from all three households.</p>
+            <p>Data collected:</p>
+            <ul id="complete-list">
+                <!-- Will be filled by JavaScript -->
+            </ul>
+            <div class="button" onclick="location.reload();">Play Again</div>
+        </div>
+    </div>
+
+    <script>
+        // Game data
+        const houseData = {
+            1: {
+                name: "Mr. Johnson",
+                completed: false,
+                form: {
+                    size: {value: "", completed: false},
+                    status: {value: "", completed: false},
+                    ages: {value: "", completed: false},
+                    occupation: {value: "", completed: false},
+                    years: {value: "", completed: false}
+                },
+                responses: {
+                    size: {
+                        keywords: ["many", "people", "household", "size", "live", "living", "residents", "family"],
+                        response: "Fine, there's just me living here. Me and my cat, Mr. Whiskers, but I guess the government doesn't count pets.",
+                        value: "1 person"
+                    },
+                    status: {
+                        keywords: ["own", "rent", "mortgage", "landlord", "house", "property", "home"],
+                        response: "I own this place. Paid it off 5 years ago, thankfully. One good thing about living in this neighborhood was the affordability.",
+                        value: "Owns home, paid off"
+                    },
+                    ages: {
+                        keywords: ["age", "old", "years", "birthday", "born"],
+                        response: "My age? That's personal, but if you must know, I'm 57. Been watching this neighborhood for all those years.",
+                        value: "57 years old"
+                    },
+                    occupation: {
+                        keywords: ["job", "work", "career", "profession", "employment", "do", "occupation"],
+                        response: "I'm retired now. Used to work at the steel mill until it shut down. Now I just watch TV and garden.",
+                        value: "Retired (former steel mill worker)"
+                    },
+                    years: {
+                        keywords: ["long", "time", "years", "moved", "live here", "address"],
+                        response: "Been in this house for 15 years. Moved here after the divorce. Not that it's any of your business.",
+                        value: "15 years"
+                    }
+                },
+                genericResponses: [
+                    "I don't see why the government needs to know that.",
+                    "Why are you asking me these personal questions?",
+                    "I suppose I have to answer, don't I?",
+                    "*sigh* What else do you need to know?",
+                    "Is this almost over? My TV show is about to start.",
+                    "The government just wants to track everyone these days.",
+                    "Fine, whatever. What's the next question?",
+                    "I guess that's not too intrusive to answer."
+                ]
+            },
+            2: {
+                name: "Mrs. Garcia",
+                completed: false,
+                form: {
+                    size: {value: "", completed: false},
+                    status: {value: "", completed: false},
+                    ages: {value: "", completed: false},
+                    occupation: {value: "", completed: false},
+                    years: {value: "", completed: false}
+                },
+                responses: {
+                    size: {
+                        keywords: ["many", "people", "household", "size", "live", "living", "residents", "family"],
+                        response: "We have five people here - me, my husband, and our three kids. It's a full house but we love it!",
+                        value: "5 people (2 adults, 3 children)"
+                    },
+                    status: {
+                        keywords: ["own", "rent", "mortgage", "landlord", "house", "property", "home"],
+                        response: "We own this house - still paying the mortgage though! Been here for 7 years. Great neighborhood for the kids.",
+                        value: "Owns home with mortgage"
+                    },
+                    ages: {
+                        keywords: ["age", "old", "years", "birthday", "born"],
+                        response: "I'm 36, my husband is 38, and the kids are 10, 8, and 4. They grow up so fast!",
+                        value: "Adults: 36, 38; Children: 10, 8, 4"
+                    },
+                    occupation: {
+                        keywords: ["job", "work", "career", "profession", "employment", "do", "occupation"],
+                        response: "I'm a nurse at the local hospital, and my husband works in IT for the school district.",
+                        value: "Nurse; IT professional"
+                    },
+                    years: {
+                        keywords: ["long", "time", "years", "moved", "live here", "address"],
+                        response: "We've lived here 7 years. Moved when we found out we were having our second child—needed more space!",
+                        value: "7 years"
+                    }
+                },
+                genericResponses: [
+                    "Oh, let me think... The timer for my cookies is about to go off!",
+                    "I'm happy to help! The census is so important for the community.",
+                    "Sorry if I'm distracted! Life is crazy with three kids!",
+                    "Of course! I'm an open book. What else do you need?",
+                    "Just a sec, let me check on the oven...",
+                    "I think my husband tried filling this out online but got sidetracked!",
+                    "It's so nice of you to come by in person for this!"
+                ]
+            },
+            3: {
+                name: "Dr. Williams",
+                completed: false,
+                form: {
+                    size: {value: "", completed: false},
+                    status: {value: "", completed: false},
+                    ages: {value: "", completed: false},
+                    occupation: {value: "", completed: false},
+                    years: {value: "", completed: false}
+                },
+                responses: {
+                    size: {
+                        keywords: ["many", "people", "household", "size", "live", "living", "residents", "family"],
+                        response: "There are two of us here, myself and my partner. Both of us teach at the university.",
+                        value: "2 people"
+                    },
+                    status: {
+                        keywords: ["own", "rent", "mortgage", "landlord", "house", "property", "home"],
+                        response: "Yes, we own this house. We bought it six years ago, after receiving tenure.",
+                        value: "Homeowner"
+                    },
+                    ages: {
+                        keywords: ["age", "old", "years", "birthday", "born"],
+                        response: "I'm 46 and my partner is 44. Hopefully that's enough for the data set.",
+                        value: "46 and 44 years old"
+                    },
+                    occupation: {
+                        keywords: ["job", "work", "career", "profession", "employment", "do", "occupation"],
+                        response: "I'm a professor of Comparative Literature, my partner is a Physics professor at the same university.",
+                        value: "University professors (Literature and Physics)"
+                    },
+                    years: {
+                        keywords: ["long", "time", "years", "moved", "live here", "address"],
+                        response: "We've lived here six years, moving right after we both got tenure at the university.",
+                        value: "6 years"
+                    }
+                },
+                genericResponses: [
+                    "I understand this is for statistical purposes, but I'm still cautious about sharing personal info.",
+                    "I do hope this data is properly secured. Privacy is paramount in the digital age.",
+                    "Yes, this is important for government resource allocation, I know.",
+                    "I'd love to hear about the data anonymization process the Census Bureau uses.",
+                    "I have office hours soon, so let's move quickly, shall we?",
+                    "I assume this information falls under Title 13 protections?",
+                    "All right, I'm cooperating. Next question?"
+                ]
+            }
+        };
+        
+        // Start the game
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('map-screen').style.display = 'block';
+        }
+        
+        // Visit a house
+        function visitHouse(houseNum) {
+            // Hide map screen
+            document.getElementById('map-screen').style.display = 'none';
+            
+            // Show the chosen house screen
+            document.getElementById(`house${houseNum}-screen`).style.display = 'block';
+            
+            // Focus the input for that house
+            document.getElementById(`house${houseNum}-input`).focus();
+            
+            // Update progress bar for that house
+            updateProgressBar(houseNum);
+        }
+        
+        // Ask a question in a house
+        function askQuestion(houseNum) {
+            const inputField = document.getElementById(`house${houseNum}-input`);
+            const question = inputField.value.trim().toLowerCase();
+            if (!question) return;
+            
+            const conversation = document.getElementById(`house${houseNum}-conversation`);
+            
+            // Show the player's question
+            conversation.innerHTML += `<div class="player-message"><strong>You:</strong> ${inputField.value}</div>`;
+            inputField.value = '';
+            
+            const house = houseData[houseNum];
+            let responded = false;
+            
+            // Check for matching keywords
+            for (const field in house.responses) {
+                if (house.form[field].completed) continue;
+                
+                const keywords = house.responses[field].keywords;
+                if (keywords.some(word => question.includes(word))) {
+                    // Provide the relevant response
+                    const response = house.responses[field].response;
+                    setTimeout(() => {
+                        conversation.innerHTML += `<div class="npc-message"><strong>${house.name}:</strong> ${response}</div>`;
+                        conversation.scrollTop = conversation.scrollHeight;
+                    }, 500);
+                    
+                    // Update form data
+                    house.form[field].value = house.responses[field].value;
+                    house.form[field].completed = true;
+                    
+                    // Reflect that data in the house's form
+                    if (field === 'size') {
+                        document.getElementById(`house${houseNum}-size`).textContent = house.form[field].value;
+                        document.getElementById(`house${houseNum}-size-check`).textContent = '✓';
+                    } else if (field === 'status') {
+                        document.getElementById(`house${houseNum}-status-value`).textContent = house.form[field].value;
+                        document.getElementById(`house${houseNum}-status-check`).textContent = '✓';
+                    } else if (field === 'ages') {
+                        document.getElementById(`house${houseNum}-ages`).textContent = house.form[field].value;
+                        document.getElementById(`house${houseNum}-ages-check`).textContent = '✓';
+                    } else if (field === 'occupation') {
+                        document.getElementById(`house${houseNum}-occupation`).textContent = house.form[field].value;
+                        document.getElementById(`house${houseNum}-occupation-check`).textContent = '✓';
+                    } else if (field === 'years') {
+                        document.getElementById(`house${houseNum}-years`).textContent = house.form[field].value;
+                        document.getElementById(`house${houseNum}-years-check`).textContent = '✓';
+                    }
+                    
+                    // Update the house progress bar
+                    updateProgressBar(houseNum);
+                    
+                    responded = true;
+                    break;
+                }
+            }
+            
+            // If no field was matched, send a generic response
+            if (!responded) {
+                const randomIndex = Math.floor(Math.random() * house.genericResponses.length);
+                const response = house.genericResponses[randomIndex];
+                setTimeout(() => {
+                    conversation.innerHTML += `<div class="npc-message"><strong>${house.name}:</strong> ${response}</div>`;
+                    conversation.scrollTop = conversation.scrollHeight;
+                }, 500);
+            }
+            
+            // Check if the house form is fully completed
+            let allComplete = true;
+            for (const field in house.form) {
+                if (!house.form[field].completed) {
+                    allComplete = false;
+                    break;
+                }
+            }
+            if (allComplete && !house.completed) {
+                setTimeout(() => {
+                    conversation.innerHTML += `<div class="system-message">All census information collected! You can now end the census.</div>`;
+                    conversation.scrollTop = conversation.scrollHeight;
+                }, 1000);
+            }
+            
+            // Focus back on input
+            document.getElementById(`house${houseNum}-input`).focus();
+        }
+        
+        // Update the progress bar for a given house
+        function updateProgressBar(houseNum) {
+            const house = houseData[houseNum];
+            let completed = 0;
+            let total = 0;
+            
+            for (const field in house.form) {
+                total++;
+                if (house.form[field].completed) {
+                    completed++;
+                }
+            }
+            
+            const progressPercent = (completed / total) * 100;
+            document.getElementById(`house${houseNum}-progress`).style.width = `${progressPercent}%`;
+        }
+        
+        // Return to the map from a house
+        function returnToMap(houseNum) {
+            const house = houseData[houseNum];
+            
+            // Calculate how many fields are filled
+            let completed = 0;
+            let total = 0;
+            for (const field in house.form) {
+                total++;
+                if (house.form[field].completed) {
+                    completed++;
+                }
+            }
+            const completionPercent = Math.round((completed / total) * 100);
+            
+            // Mark house as completed if at least 3 fields are done
+            if (completionPercent >= 60) {
+                house.completed = true;
+                document.getElementById(`house${houseNum}-status`).textContent = "Completed";
+                document.getElementById(`house${houseNum}-status`).style.color = "#39ff14";
+            } else {
+                document.getElementById(`house${houseNum}-status`).textContent = `${completionPercent}% Complete`;
+                document.getElementById(`house${houseNum}-status`).style.color = "#ffcc00";
+            }
+            
+            // Hide the house screen
+            document.getElementById(`house${houseNum}-screen`).style.display = 'none';
+            
+            // Update overall completion
+            updateOverallCompletion();
+            
+            // Check if all houses are fully done
+            if (houseData[1].completed && houseData[2].completed && houseData[3].completed) {
+                showCompleteScreen();
+            } else {
+                // Otherwise, go back to the map
+                document.getElementById('map-screen').style.display = 'block';
+            }
+        }
+        
+        // Update the overall completion on the map screen
+        function updateOverallCompletion() {
+            let completed = 0;
+            if (houseData[1].completed) completed++;
+            if (houseData[2].completed) completed++;
+            if (houseData[3].completed) completed++;
+            
+            const overallPercent = Math.round((completed / 3) * 100);
+            document.getElementById('completion-counter').textContent = `COMPLETION: ${overallPercent}%`;
+        }
+        
+        // Show the final "complete" screen
+        function showCompleteScreen() {
+            document.getElementById('map-screen').style.display = 'none';
+            
+            const completeList = document.getElementById('complete-list');
+            completeList.innerHTML = '';
+            
+            // Fill in the data from each house
+            for (let i = 1; i <= 3; i++) {
+                const house = houseData[i];
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `<strong>${house.name}:</strong>`;
+                
+                const subList = document.createElement('ul');
+                for (const field in house.form) {
+                    if (house.form[field].completed) {
+                        const fieldName =
+                            field === 'size' ? 'Household Size' :
+                            field === 'status' ? 'Housing Status' :
+                            field === 'ages' ? 'Ages' :
+                            field === 'occupation' ? 'Occupation' :
+                            'Years at Address';
+                        
+                        const subItem = document.createElement('li');
+                        subItem.textContent = `${fieldName}: ${house.form[field].value}`;
+                        subList.appendChild(subItem);
+                    }
+                }
+                listItem.appendChild(subList);
+                completeList.appendChild(listItem);
+            }
+            
+            // Show the completion screen
+            document.getElementById('complete-screen').style.display = 'block';
+        }
+        
+        // Set up enter key listeners for each house
+        window.onload = function() {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`house${i}-input`).addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        askQuestion(i);
+                    }
+                });
+            }
+        };
+    </script>
+</body>
+</html>
+
